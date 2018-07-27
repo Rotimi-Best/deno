@@ -4,7 +4,7 @@
 import { SourceMapConsumer, MappedPosition } from "source-map";
 import { RawSourceMap } from "source-map";
 import * as base64 from "base64-js";
-import { assert, arrayToStr } from "./util";
+import { arrayToStr } from "./util";
 
 const consumers = new Map<string, SourceMapConsumer>();
 
@@ -187,12 +187,13 @@ const reSourceMap = /^data:application\/json[^,]+base64,/;
 function loadConsumer(source: string): SourceMapConsumer {
   let consumer = consumers.get(source);
   if (consumer == null) {
-    let code = getGeneratedContents(source);
+    const code = getGeneratedContents(source);
     if (!code) {
       return null;
     }
-    assert(typeof code === "string");
-    code = code as string;
+    if (typeof code !== "string") {
+      throw new Error("expected string");
+    }
 
     let sourceMappingURL = retrieveSourceMapURL(code);
     if (!sourceMappingURL) {
